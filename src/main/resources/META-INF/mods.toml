@@ -1,0 +1,28 @@
+modLoader="javafml" #mandatory
+loaderVersion="[35,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+license="MIT"
+[[mods]] #mandatory
+
+modId="dungeonsadditions" #mandatory
+version="1.0.3" #mandatory
+displayName="Dungeons Additions" #mandatory
+logoFile="examplemod.png" #optional
+credits="This mod is part of a group of mods adding Minecraft Dungeons into Minecraft! Here's the link to one you might like: https://www.curseforge.com/minecraft/mc-mods/dungeons-mobs" #optional
+authors="Alexander from Alexander's Fun And Games" #optional
+description='''
+This mod adds a ton of new mobs designed to fit seamlessly in with Minecraft Dungeons! Enjoy!
+
+Also check out my youtube channel :) https://www.youtube.com/channel/UC3bUtFY6Fn5HDwhxunD8yaw
+'''
+[[dependencies.dungeonsadditions]] #optional
+    modId="forge" #mandatory
+    mandatory=true #mandatory
+    versionRange="[35,)" #mandatory
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.dungeonsadditions]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.4,1.17)"
+    ordering="NONE"
+    side="BOTH"

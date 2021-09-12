@@ -1,0 +1,62 @@
+{
+	"entity.jailor.idle": {
+		"category": "entity",
+		"subtitle": "Jailor cackles",
+		"sounds": [
+			{
+				"name": "dungeonsadditions:jailor/idle1",
+				"stream": true
+			},
+						{
+				"name": "dungeonsadditions:jailor/idle2",
+				"stream": true
+			},
+						{
+				"name": "dungeonsadditions:jailor/idle3",
+				"stream": true
+			}
+		]
+	},
+	"entity.jailor.hurt": {
+		"category": "entity",
+		"subtitle": "Jailor Hurts",
+		"sounds": [
+			{
+				"name": "dungeonsadditions:jailor/hurt1",
+				"stream": true
+			},
+						{
+				"name": "dungeonsadditions:jailor/hurt2",
+				"stream": true
+			}
+		]
+	},
+		"entity.jailor.death": {
+		"category": "entity",
+		"subtitle": "Jailor Dies",
+		"sounds": [
+			{
+				"name": "dungeonsadditions:jailor/death1",
+				"stream": true
+			},
+						{
+				"name": "dungeonsadditions:jailor/death2",
+				"stream": true
+			}
+		]
+	},
+	"entity.jailor.attack": {
+		"category": "entity",
+		"subtitle": "Jailor Swings",
+		"sounds": [
+			{
+				"name": "dungeonsadditions:jailor/attack1",
+				"stream": true
+			},
+						{
+				"name": "dungeonsadditions:jailor/attack2",
+				"stream": true
+			}
+		]
+	}
+}
