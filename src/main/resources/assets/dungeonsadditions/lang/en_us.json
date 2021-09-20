@@ -1,8 +1,18 @@
 {
 	"entity.dungeonsadditions.jailor" : "Jailor",
+	"entity.dungeonsadditions.illager_warden" : "Illager Warden",
+	"entity.dungeonsadditions.elite_evoker" : "Elite Evoker",
+	"entity.dungeonsadditions.tribager" : "Tribager Warrior",
+	"entity.dungeonsadditions.tribager_chief" : "Tribager Chief",
 	"entity.dungeonsadditions.roving_marketer" : "Roving Marketer",
 	"entity.dungeonsadditions.roving_marketer_item" : "Roving Marketer Item",
 	
+	"item.dungeonsadditions.tribal_spear" : "Tribal Spear",
+		
 	"item.dungeonsadditions.jailor_spawn_egg" : "Jailor Spawn Egg",
+	"item.dungeonsadditions.illager_warden_spawn_egg" : "Illager Warden Spawn Egg",
+	"item.dungeonsadditions.elite_evoker_spawn_egg" : "Elite Evoker Spawn Egg",
+	"item.dungeonsadditions.tribager_spawn_egg" : "Tribager Warrior Spawn Egg",
+	"item.dungeonsadditions.tribager_chief_spawn_egg" : "Tribager Chief Spawn Egg",
 	"item.dungeonsadditions.roving_marketer_spawn_egg" : "Roving Marketer Spawn Egg"
 }

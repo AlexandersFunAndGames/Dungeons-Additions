@@ -118,7 +118,7 @@ public class JailorEntity extends AbstractIllagerEntity implements IAnimatable {
 	   
 		@Override
 		public void registerControllers(AnimationData data) {
-			data.addAnimationController(new AnimationController(this, "controller", 2, this::predicate));
+			data.addAnimationController(new AnimationController(this, "controller", 5, this::predicate));
 		}
 	   
 		private <P extends IAnimatable> PlayState predicate(AnimationEvent<P> event) {

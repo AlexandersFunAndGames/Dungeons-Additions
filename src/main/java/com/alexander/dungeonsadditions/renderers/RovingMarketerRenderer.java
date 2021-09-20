@@ -2,8 +2,6 @@ package com.alexander.dungeonsadditions.renderers;
 
 import com.alexander.dungeonsadditions.entities.RovingMarketerEntity;
 import com.alexander.dungeonsadditions.models.entity.RovingMarketerModel;
-import com.alexander.dungeonsadditions.renderers.layers.GeoHeadLayer;
-import com.alexander.dungeonsadditions.renderers.layers.GeoHeldItemLayer;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
