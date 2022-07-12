@@ -189,8 +189,9 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 		   if (
 				   p_70097_1_.isProjectile() ||
 				   p_70097_1_.isExplosion() ||
-				   (p_70097_2_ <= 5 + this.DamageReduceInt && !p_70097_1_.isBypassArmor() ||
-					(this.injuryDamageCooldown <= 0 && !p_70097_1_.isBypassArmor()))) {
+						   ((p_70097_2_ <= 5 + this.DamageReduceInt && !p_70097_1_.isBypassArmor() ||
+								   (this.injuryDamageCooldown <= 0 && !p_70097_1_.isBypassArmor()))) &&
+								   !this.canHurt) {
 			   if (!(this.ArmorHitTime > 0)) {
 				   if (this.injuryDamageCooldown <= 0) {
 					   this.injuryDamageCooldown = 30;
