@@ -9,6 +9,7 @@ import com.google.common.collect.Maps;
 
 import com.google.common.collect.Sets;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.material.Material;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
@@ -23,11 +24,13 @@ import net.minecraft.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.ai.goal.RandomWalkingGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.item.FallingBlockEntity;
 import net.minecraft.entity.item.TNTEntity;
 import net.minecraft.entity.merchant.villager.AbstractVillagerEntity;
 import net.minecraft.entity.monster.AbstractIllagerEntity;
 import net.minecraft.entity.monster.AbstractRaiderEntity;
 import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.monster.RavagerEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
@@ -42,6 +45,8 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.particles.BlockParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.pathfinding.GroundPathNavigator;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.GroundPathHelper;
 import net.minecraft.util.ResourceLocation;
@@ -59,6 +64,7 @@ import net.minecraft.world.raid.Raid;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import software.bernie.geckolib3.core.IAnimatable;
@@ -72,6 +78,7 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnimatable {
 
 	public int commandRoyalGuardCooldown;
+	public int seeTimes;
 	public int powerfulAttackCooldown;
 	public int DamageReduceInt;
 	public float DamageReduceMath;
@@ -88,10 +95,11 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 	public static final DataParameter<Boolean> IS_THUMP = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
 	public static final DataParameter<Boolean> IS_DEFENDING = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
 	public static final DataParameter<Boolean> IS_ATTACKING = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
+	public static final DataParameter<Boolean> C_DEFENDING = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
+	public static final DataParameter<Boolean> C_ATTACKING = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
 	public static final DataParameter<Integer> ATTACK_TICKS = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.INT);
 	public static final DataParameter<Integer> TIMER = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.INT);
 	public static final DataParameter<Integer> ATTACK_TYPE = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.INT);
-	public static final DataParameter<Integer> C_ATTACK_TYPE = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.INT);
 	public static final DataParameter<Boolean> IS_COMMAND_GUARD = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
 	   AnimationFactory factory = new AnimationFactory(this);
 
@@ -127,6 +135,8 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 			this.entityData.define(CAN_MELEE, false);
 			this.entityData.define(IS_ATTACKING, false);
 			this.entityData.define(IS_DEFENDING, false);
+			this.entityData.define(C_ATTACKING, false);
+			this.entityData.define(C_DEFENDING, false);
 		    this.entityData.define(ATTACK_TICKS, 0);
 			this.entityData.define(TIMER, 0);
 			this.entityData.define(ATTACK_TYPE, 0);
@@ -142,7 +152,7 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 		   //String command_defend = "illager_warden_royal_guard_defend";
 			event.getController().animationSpeed = 1;
 			if (this.entityData.get(IS_THUMP)) {
-				event.getController().animationSpeed = 1.5;
+				event.getController().animationSpeed = 1.575;
 				event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_thump", true));
 			} else if (this.entityData.get(IS_MELEE)) {
 			   if (this.entityData.get(ATTACK_TYPE) == 0) {
@@ -186,24 +196,38 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 	@Override
 	public boolean hurt(DamageSource p_70097_1_, float p_70097_2_) {
 		   boolean e;
-		   if (
-				   p_70097_1_.isProjectile() ||
-				   p_70097_1_.isExplosion() ||
-				   (p_70097_2_ <= 5 + this.DamageReduceInt && !p_70097_1_.isBypassArmor() ||
-					(this.injuryDamageCooldown <= 0 && !p_70097_1_.isBypassArmor()))) {
+		   if (p_70097_1_.isProjectile() ||
+						   p_70097_1_.isFire() ||
+						   p_70097_1_.isExplosion() ||
+						   (p_70097_2_ <= 3 + this.DamageReduceInt && !p_70097_1_.isBypassArmor() &&
+								   !this.canHurt || this.getRandom().nextFloat() < 0.35) ||
+						   this.injuryDamageCooldown <= 0 && !p_70097_1_.isBypassArmor()) {
 			   if (!(this.ArmorHitTime > 0)) {
 				   if (this.injuryDamageCooldown <= 0) {
 					   this.injuryDamageCooldown = 30;
 				   }
-				   if (this.ReduceDamageReduceCooldown <= 0) {
-					   this.DamageReduceInt = Math.max(DamageReduceInt - 3, 3);
-					   this.ReduceDamageReduceCooldown = 10;
-				   }
-			   }else {
-				   this.ArmorHitTime = 20;
+			   }
+			   if (this.ReduceDamageReduceCooldown <= 0) {
+				   this.DamageReduceInt = (int) Math.max(DamageReduceInt - 3, -2);
+				   this.ReduceDamageReduceCooldown = 15;
 			   }
 
-			   this.playSound(SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, 0.8f, 0.65F + this.getRandom().nextFloat() * 0.1F);
+			   Entity l = p_70097_1_.getDirectEntity();
+
+			   this.ArmorHitTime = 8;
+			   if (l != null) {
+				   l.setDeltaMovement(l.getDeltaMovement().add(
+						   (l.getX() - this.getX()) / 4.14,
+						   0.15,
+						   (l.getZ() - this.getZ()) / 4.14
+				   ));
+			   }
+
+			   if (!p_70097_1_.isFire()) {
+				   this.playSound(SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, 0.8f, 0.65F + this.getRandom().nextFloat() * 0.1F);
+			   }else {
+				   this.setSecondsOnFire(0);
+			   }
 			   e = false;
 		   }else {
 			   e = super.hurt(p_70097_1_, p_70097_2_);
@@ -232,7 +256,15 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 	@Override
 	public void aiStep() {
 		super.aiStep();
-		if (this.hurtTime > 0) {
+		if (this.getTarget() != null && this.getTarget().isAlive()) {
+			this.seeTimes ++;
+			if (this.seeTimes > 50000) {
+				this.seeTimes = 49999;
+			}
+		}else {
+			this.seeTimes = 0;
+		}
+		if (this.hurtTime > 0 || this.ArmorHitTime > 0) {
 			this.setDeltaMovement(this.getDeltaMovement().add(0,-3.5,0));
 		}
 		if (this.ArmorHitTime > 0) {
@@ -256,17 +288,24 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 			}
 			this.DamageReduceInt = (int) Math.max(DamageReduceMath, 3);
 		}
+		if (this.seeTimes > 400 && this.entityData.get(IS_DEFENDING) || this.distanceToSqr(this.getTarget()) >= 800 ) {
+
+		}
+		if (this.entityData.get(IS_DEFENDING)) {
+			this.getNavigation().stop();
+		}
+
 	}
 
 	public static AttributeModifierMap.MutableAttribute createAttributes() {
 	      return MonsterEntity.createMonsterAttributes()
-				  .add(Attributes.ATTACK_KNOCKBACK, 1.25D)
-				  .add(Attributes.KNOCKBACK_RESISTANCE, 0.75D)
+				  .add(Attributes.ATTACK_KNOCKBACK, 3.25D)
+				  .add(Attributes.KNOCKBACK_RESISTANCE, 0.85D)
 				  .add(Attributes.MOVEMENT_SPEED, (double)0.225F)
-				  .add(Attributes.FOLLOW_RANGE, 24.0D)
+				  .add(Attributes.FOLLOW_RANGE, 26.0D)
 				  .add(Attributes.MAX_HEALTH, 100.0D)
-				  .add(Attributes.ARMOR, 20.0D)
-				  .add(Attributes.ATTACK_DAMAGE, 8.0D);
+				  .add(Attributes.ARMOR, 12.0D)
+				  .add(Attributes.ATTACK_DAMAGE, 10.0D);
 	   }
 
 	   public void addAdditionalSaveData(CompoundNBT p_213281_1_) {
@@ -415,7 +454,7 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 
 		   @Override
 		   protected void checkAndPerformAttack(LivingEntity enemy, double distToEnemySqr) {
-			   if ((distToEnemySqr + 15 + enemy.getBbWidth() <= this.getAttackReachSqr(enemy) || v.getBoundingBox().intersects(enemy.getBoundingBox())) && this.attackTimer <= 0) {
+			   if ((distToEnemySqr + 21 + enemy.getBbWidth() <= this.getAttackReachSqr(enemy) || v.getBoundingBox().intersects(enemy.getBoundingBox()) || v.getBoundingBox().intersects(enemy.getBoundingBox().inflate(3,1.3,3))) && this.attackTimer <= 0) {
 				   this.attackTimer = maxAttackTimer;
 				   v.entityData.set(ATTACK_TYPE, 0);
 				   v.entityData.set(CAN_MELEE, true);
@@ -488,10 +527,15 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 					v.playSound(SoundEvents.PLAYER_ATTACK_CRIT,1,1);
 					if (v.distanceToSqr(v.getTarget()) <= 12 + v.getTarget().getBbWidth()) {
 						v.doHurtTarget(v.getTarget());
+						if (v.getTarget() instanceof PlayerEntity) {
+							if (v.getTarget().isBlocking()) {
+								((PlayerEntity) v.getTarget()).disableShield(true);
+							}
+						}
 					}
 				}
 				if (v.entityData.get(TIMER) == 17) {
-					v.setDeltaMovement(v.getDeltaMovement().add((v.getTarget().getX() - v.getX()) / Math.PI ,0,(v.getTarget().getZ() - v.getZ()) / Math.PI));
+					v.setDeltaMovement(v.getDeltaMovement().add(-Math.max(Math.min(v.getX() - v.getTarget().getX(), 3), -3)  ,0,-Math.max(Math.min(v.getZ() -v.getTarget().getZ(), 3), -3)));
 				}
 			}
 
@@ -554,8 +598,9 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 					}
 				}
 				if (v.entityData.get(TIMER) == 2) {
-					v.setDeltaMovement(v.getDeltaMovement().add((v.getTarget().getX() - v.getX()) / Math.PI ,0,(v.getTarget().getZ() - v.getZ()) / Math.PI));
+					v.setDeltaMovement(v.getDeltaMovement().add(-Math.max(Math.min(v.getX() - v.getTarget().getX(), 3), -3)  ,0,-Math.max(Math.min(v.getZ() -v.getTarget().getZ(), 3), -3)));
 				}
+
 			}
 
 		}
@@ -609,7 +654,7 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 					}
 				}
 				if (v.entityData.get(TIMER) == 2) {
-					v.setDeltaMovement(v.getDeltaMovement().add((v.getTarget().getX() - v.getX()) / Math.PI ,0,(v.getTarget().getZ() - v.getZ()) / Math.PI));
+					v.setDeltaMovement(v.getDeltaMovement().add(-Math.max(Math.min(v.getX() - v.getTarget().getX(), 3), -3)  ,0,-Math.max(Math.min(v.getZ() -v.getTarget().getZ(), 3), -3)));
 				}
 			}
 
@@ -672,7 +717,7 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 					}
 				}
 				if (v.entityData.get(TIMER) == 13) {
-					v.setDeltaMovement(v.getDeltaMovement().add((v.getTarget().getX() - v.getX()) / Math.PI ,0,(v.getTarget().getZ() - v.getZ()) / Math.PI));
+					v.setDeltaMovement(v.getDeltaMovement().add(-Math.max(Math.min(v.getX() - v.getTarget().getX(), 3), -3)  ,0,-Math.max(Math.min(v.getZ() -v.getTarget().getZ(), 3), -3)));
 				}
 			}else {
 				v.entityData.set(IS_MELEE, false);
@@ -710,7 +755,7 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 
 		@Override
 		public void start() {
-			v.powerfulAttackCooldown = 200;
+			v.powerfulAttackCooldown = 280;
 			v.entityData.set(IS_THUMP, true);
 			v.entityData.set(TIMER, 0);
 		}
@@ -724,24 +769,24 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 		private void Attackparticle(int paticle,float circle, float vec, float math) {
 			if (v.level.isClientSide) {
 				for (int i1 = 0; i1 < paticle; i1++) {
-					double DeltaMovementX = getRandom().nextGaussian() * 0.07D;
-					double DeltaMovementY = getRandom().nextGaussian() * 0.07D;
-					double DeltaMovementZ = getRandom().nextGaussian() * 0.07D;
+					double DeltaMovementX = v.getRandom().nextGaussian() * 0.07D;
+					double DeltaMovementY = v.getRandom().nextGaussian() * 0.07D;
+					double DeltaMovementZ = v.getRandom().nextGaussian() * 0.07D;
 					float angle = (0.01745329251F * v.yBodyRot) + i1;
 					float f = MathHelper.cos(v.yRot * ((float)Math.PI / 180F)) ;
 					float f1 = MathHelper.sin(v.yRot * ((float)Math.PI / 180F)) ;
 					double extraX = circle * MathHelper.sin((float) (Math.PI + angle));
 					double extraY = 0.3F;
 					double extraZ = circle * MathHelper.cos(angle);
-					double theta = (yBodyRot) * (Math.PI / 180);
+					double theta = (v.yBodyRot) * (Math.PI / 180);
 					theta += Math.PI / 2;
 					double vecX = Math.cos(theta);
 					double vecZ = Math.sin(theta);
-					int hitX = MathHelper.floor(getX() + vec * vecX+ extraX);
-					int hitY = MathHelper.floor(getY());
-					int hitZ = MathHelper.floor(getZ() + vec * vecZ + extraZ);
+					int hitX = MathHelper.floor(v.getX() + vec * vecX+ extraX);
+					int hitY = MathHelper.floor(v.getY());
+					int hitZ = MathHelper.floor(v.getZ() + vec * vecZ + extraZ);
 					BlockPos hit = new BlockPos(hitX, hitY, hitZ);
-					BlockState block = level.getBlockState(hit.below());
+					BlockState block = v.level.getBlockState(hit.below());
 					v.level.addParticle(new BlockParticleData(ParticleTypes.BLOCK, block), getX() + vec * vecX + extraX + f * math, v.getY() + extraY, getZ() + vec * vecZ + extraZ + f1 * math, DeltaMovementX, DeltaMovementY, DeltaMovementZ);
 
 				}
@@ -751,8 +796,8 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 		public void ExplosionCloud(){
 			AreaEffectCloudEntity areaeffectcloudentity = new AreaEffectCloudEntity(v.level, v.getX(), v.getY(0.5), v.getZ());
 			areaeffectcloudentity.setParticle(ParticleTypes.EXPLOSION);
-			areaeffectcloudentity.setRadius(4.25F);
-			areaeffectcloudentity.setDuration(10);
+			areaeffectcloudentity.setRadius(4.75F);
+			areaeffectcloudentity.setDuration(0);
 			v.level.addFreshEntity(areaeffectcloudentity);
 			v.playSound(SoundEvents.GENERIC_EXPLODE, 1, 1);
 		}
@@ -760,28 +805,29 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 		@Override
 		public void tick() {
 			v.entityData.set(TIMER, v.entityData.get(TIMER) + 1);
+			v.setDeltaMovement(Vector3d.ZERO);
 			if (v.getTarget() != null) {
 				float f = (float) MathHelper.atan2(v.getTarget().getZ() - v.getZ(), v.getTarget().getX() - v.getX());
-				if (v.entityData.get(TIMER) == (int) (44 / 1.5)) {
+				if (v.entityData.get(TIMER) == (int) (45 / 1.5)) {
 					this.Attackparticle(30, 0.2F, 1.15F, 0);
 					this.ExplosionCloud();
 
-					List<Entity> list = Lists.newArrayList(v.level.getEntities(v, v.getBoundingBox().inflate(8, 8 + v.getTarget().getBbHeight(), 8)));
+					List<Entity> list = Lists.newArrayList(v.level.getEntities(v, v.getBoundingBox().inflate(9, 9 + v.getTarget().getBbHeight(), 9)));
 					for(Entity entity : list) {
 						if(entity instanceof LivingEntity && (!v.isAlliedTo(entity) && entity != v.getTarget())){
 							LivingEntity livingEntity = (LivingEntity)entity;
 							livingEntity.setDeltaMovement(
-									livingEntity.getDeltaMovement().add((v.getX() - livingEntity.getX()) / -3.14,0.6888 + livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE),(v.getZ() - livingEntity.getZ()) / -3.14)
+									livingEntity.getDeltaMovement().add((v.getX() - livingEntity.getX()) / -3.14,0.6888,(v.getZ() - livingEntity.getZ()) / -3.14)
 							);
-							livingEntity.hurt(DamageSource.mobAttack(v), (float) v.getAttributeBaseValue(Attributes.ATTACK_DAMAGE));
+							v.doHurtTarget(livingEntity);
 						}
 					}
-					if(v.distanceToSqr(v.getTarget()) <= 50){
+					if(v.distanceToSqr(v.getTarget()) <= 60){
 						LivingEntity livingEntity = (LivingEntity)v.getTarget();
 						livingEntity.setDeltaMovement(
-								livingEntity.getDeltaMovement().add((v.getX() - livingEntity.getX()) / -3.14,0.6888 + livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE),(v.getZ() - livingEntity.getZ()) / -3.14)
+								livingEntity.getDeltaMovement().add((v.getX() - livingEntity.getX()) / -2.14,0.6888,(v.getZ() - livingEntity.getZ()) / -2.14)
 						);
-						livingEntity.hurt(DamageSource.mobAttack(v), (float) v.getAttributeBaseValue(Attributes.ATTACK_DAMAGE));
+						v.doHurtTarget(livingEntity);
 					}
 				}
 			}

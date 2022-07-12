@@ -22,7 +22,7 @@ public class RaidEntries {
     		}
     		
     		if (DungeonsAdditionsConfig.illager_warden_raid_spawning.get()) {
-    			Raid.WaveMember.create("illager_warden", EntityTypeInit.ILLAGER_WARDEN.get(), new int[]{0, 0, 0, 0, 0, 1, 1, 2});
+    			Raid.WaveMember.create("illager_warden", EntityTypeInit.ILLAGER_WARDEN.get(), new int[]{0, 0, 0, 0, 1, 1, 0, 1});
     		}
     		
     		if (DungeonsAdditionsConfig.elite_evoker_raid_spawning.get()) {

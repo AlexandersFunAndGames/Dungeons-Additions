@@ -1,6 +1,7 @@
 package com.alexander.dungeonsadditions;
 
 import com.alexander.dungeonsadditions.entities.IllagerWardenEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -16,6 +17,11 @@ public class DungeonsAdditionsEvent {
                     IllagerWardenEntity.MAX_DAMAGE,
                     event.getAmount() * (IllagerWardenEntity.DAMAGE_RESISTANCE) / 100F)
             );
+        }
+        if (event.getEntityLiving() instanceof PlayerEntity) {
+            if (event.getSource().getEntity() instanceof IllagerWardenEntity) {
+                event.setAmount(18);
+            }
         }
     }
 

@@ -232,7 +232,7 @@
 				},
 				"cape": {
 					"rotation": {
-						"vector": ["Math.cos(query.anim_time * 568 +25) * -10 + 35", 0, 0]
+						"vector": ["Math.cos(query.anim_time * 1136 +25) * -6 + 55", 0, 0]
 					}
 				},
 				"head": {
