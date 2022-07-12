@@ -24,9 +24,9 @@ public class EntityTypeInit {
 	public static final RegistryObject<EntityType<JailorEntity>> JAILOR = ENTITY_TYPES.register("jailor",
 			() -> EntityType.Builder.of(JailorEntity::new, EntityClassification.MONSTER).sized(0.8F, 1.8F)
 					.build(new ResourceLocation(DungeonsAdditions.MOD_ID, "jailor").toString()));
-	
+
 	public static final RegistryObject<EntityType<IllagerWardenEntity>> ILLAGER_WARDEN = ENTITY_TYPES.register("illager_warden",
-			() -> EntityType.Builder.of(IllagerWardenEntity::new, EntityClassification.MONSTER).sized(0.6F, 1.95F)
+			() -> EntityType.Builder.of(IllagerWardenEntity::new, EntityClassification.MONSTER).sized(0.68F, 1.95F)
 					.build(new ResourceLocation(DungeonsAdditions.MOD_ID, "illager_warden").toString()));
 	
 	public static final RegistryObject<EntityType<EliteEvokerEntity>> ELITE_EVOKER = ENTITY_TYPES.register("elite_evoker",

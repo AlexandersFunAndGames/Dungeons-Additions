@@ -1,27 +1,19 @@
 package com.alexander.dungeonsadditions.entities;
 
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.function.Predicate;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
-import com.alexander.dungeonsadditions.init.SoundEventInit;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.google.common.collect.Sets;
+import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.CreatureAttribute;
-import net.minecraft.entity.CreatureEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityPredicate;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ILivingEntityData;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.RandomPositionGenerator;
+import net.minecraft.enchantment.ProtectionEnchantment;
+import net.minecraft.entity.*;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.goal.Goal;
@@ -31,33 +23,33 @@ import net.minecraft.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.entity.ai.goal.NearestAttackableTargetGoal;
 import net.minecraft.entity.ai.goal.RandomWalkingGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.item.TNTEntity;
 import net.minecraft.entity.merchant.villager.AbstractVillagerEntity;
 import net.minecraft.entity.monster.AbstractIllagerEntity;
 import net.minecraft.entity.monster.AbstractRaiderEntity;
-import net.minecraft.entity.monster.CreeperEntity;
-import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.monster.MonsterEntity;
-import net.minecraft.entity.monster.RavagerEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.LeadItem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.particles.BlockParticleData;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.pathfinding.GroundPathNavigator;
-import net.minecraft.pathfinding.Path;
-import net.minecraft.pathfinding.PathNavigator;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.GroundPathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -79,7 +71,28 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnimatable {
 
-	   public static final DataParameter<Integer> ATTACK_TICKS = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.INT);
+	public int commandRoyalGuardCooldown;
+	public int powerfulAttackCooldown;
+	public int DamageReduceInt;
+	public float DamageReduceMath;
+	public int ReduceDamageReduceCooldown;
+	public int injuryDamageCooldown;
+	public int ArmorHitTime;
+	public int sprintCooldown;
+	public boolean canHurt;
+	public static int MAX_DAMAGE = 15;
+	public static int DAMAGE_RESISTANCE = 35;
+
+	public static final DataParameter<Boolean> CAN_MELEE = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
+	public static final DataParameter<Boolean> IS_MELEE = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
+	public static final DataParameter<Boolean> IS_THUMP = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
+	public static final DataParameter<Boolean> IS_DEFENDING = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
+	public static final DataParameter<Boolean> IS_ATTACKING = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
+	public static final DataParameter<Integer> ATTACK_TICKS = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.INT);
+	public static final DataParameter<Integer> TIMER = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.INT);
+	public static final DataParameter<Integer> ATTACK_TYPE = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.INT);
+	public static final DataParameter<Integer> C_ATTACK_TYPE = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.INT);
+	public static final DataParameter<Boolean> IS_COMMAND_GUARD = EntityDataManager.defineId(IllagerWardenEntity.class, DataSerializers.BOOLEAN);
 	   AnimationFactory factory = new AnimationFactory(this);
 
 	   public IllagerWardenEntity(EntityType<? extends IllagerWardenEntity> p_i50189_1_, World p_i50189_2_) {
@@ -89,9 +102,14 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 	   protected void registerGoals() {
 	      super.registerGoals();
 	      this.goalSelector.addGoal(0, new SwimGoal(this));
+		   this.goalSelector.addGoal(0, new IllagerWardenEntity.MeleeGoal());
+		   this.goalSelector.addGoal(0, new IllagerWardenEntity.Melee2Goal());
+		   this.goalSelector.addGoal(0, new IllagerWardenEntity.Melee3Goal());
+		   this.goalSelector.addGoal(0, new IllagerWardenEntity.MeleeEndGoal());
+		   this.goalSelector.addGoal(1, new IllagerWardenEntity.ThumpGoal());
 	      this.goalSelector.addGoal(2, new AbstractIllagerEntity.RaidOpenDoorGoal(this));
 	      this.goalSelector.addGoal(3, new AbstractRaiderEntity.FindTargetGoal(this, 10.0F));
-	      this.goalSelector.addGoal(2, new IllagerWardenEntity.AttackGoal(this));
+	      this.goalSelector.addGoal(2, new IllagerWardenEntity.AttackGoal(this, 1.45));
 	      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, AbstractRaiderEntity.class)).setAlertOthers());
 	      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true).setUnseenMemoryTicks(600));
 	      this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, AbstractVillagerEntity.class, true).setUnseenMemoryTicks(600));
@@ -103,24 +121,54 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 	   
 	    protected void defineSynchedData() {
 	        super.defineSynchedData();
+			this.entityData.define(IS_COMMAND_GUARD, false);
+			this.entityData.define(IS_THUMP, false);
+			this.entityData.define(IS_MELEE, false);
+			this.entityData.define(CAN_MELEE, false);
+			this.entityData.define(IS_ATTACKING, false);
+			this.entityData.define(IS_DEFENDING, false);
 		    this.entityData.define(ATTACK_TICKS, 0);
+			this.entityData.define(TIMER, 0);
+			this.entityData.define(ATTACK_TYPE, 0);
 	    }
 	   
 		@Override
 		public void registerControllers(AnimationData data) {
 			data.addAnimationController(new AnimationController(this, "controller", 5, this::predicate));
 		}
-	   
 		private <P extends IAnimatable> PlayState predicate(AnimationEvent<P> event) {
-				if (this.getAttackTicks() > 0) {
-					event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_attack", true));
-				} else if (!(event.getLimbSwingAmount() > -0.15F && event.getLimbSwingAmount() < 0.15F)) {
-						event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_walk", true));
-				} else {
-					    event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_idle", true));
-				}
-			return PlayState.CONTINUE;
-		}
+		   //String assemble = "illager_warden_royal_guard_assemble";
+		   //String command_attack = "illager_warden_royal_guard_attack";
+		   //String command_defend = "illager_warden_royal_guard_defend";
+			event.getController().animationSpeed = 1;
+			if (this.entityData.get(IS_THUMP)) {
+				event.getController().animationSpeed = 1.5;
+				event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_thump", true));
+			} else if (this.entityData.get(IS_MELEE)) {
+			   if (this.entityData.get(ATTACK_TYPE) == 0) {
+				   event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_attack", true));
+			   }else
+			   if (this.entityData.get(ATTACK_TYPE) == 1) {
+				   event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_attack_2", true));
+			   }else
+			   if (this.entityData.get(ATTACK_TYPE) == 2) {
+				   event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_attack_3", true));
+			   }else
+			   if (this.entityData.get(ATTACK_TYPE) == 3) {
+				   event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_attack_end", true));
+			   }
+		   } else if (!(event.getLimbSwingAmount() > -0.15F && event.getLimbSwingAmount() < 0.15F)) {
+			   if (!this.isAggressive()) {
+				   event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_walk", true));
+			   }else {
+				   event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_run", true));
+			   }
+		   } else {
+			   event.getController().setAnimation(new AnimationBuilder().addAnimation("illager_warden_idle", true));
+		   }
+
+		   return PlayState.CONTINUE;
+	   }
 		
 		@Override
 		public AnimationFactory getFactory() {
@@ -134,12 +182,41 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 				this.setAttackTicks(this.getAttackTicks() - 1);
 			}
 		}
-		
-		   public int getAttackTicks() {
+
+	@Override
+	public boolean hurt(DamageSource p_70097_1_, float p_70097_2_) {
+		   boolean e;
+		   if (
+				   p_70097_1_.isProjectile() ||
+				   p_70097_1_.isExplosion() ||
+				   (p_70097_2_ <= 5 + this.DamageReduceInt && !p_70097_1_.isBypassArmor() ||
+					(this.injuryDamageCooldown <= 0 && !p_70097_1_.isBypassArmor()))) {
+			   if (!(this.ArmorHitTime > 0)) {
+				   if (this.injuryDamageCooldown <= 0) {
+					   this.injuryDamageCooldown = 30;
+				   }
+				   if (this.ReduceDamageReduceCooldown <= 0) {
+					   this.DamageReduceInt = Math.max(DamageReduceInt - 3, 3);
+					   this.ReduceDamageReduceCooldown = 10;
+				   }
+			   }else {
+				   this.ArmorHitTime = 20;
+			   }
+
+			   this.playSound(SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, 0.8f, 0.65F + this.getRandom().nextFloat() * 0.1F);
+			   e = false;
+		   }else {
+			   e = super.hurt(p_70097_1_, p_70097_2_);
+		   }
+		   this.canHurt = false;
+		   return e;
+	}
+
+	public int getAttackTicks() {
 			      return this.entityData.get(ATTACK_TICKS);
 			   }
 
-			   public void setAttackTicks(int p_189794_1_) {	   
+		public void setAttackTicks(int p_189794_1_) {
 			      this.entityData.set(ATTACK_TICKS, p_189794_1_);
 			   }
 
@@ -152,8 +229,44 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 	      super.customServerAiStep();
 	   }
 
-	   public static AttributeModifierMap.MutableAttribute createAttributes() {
-	      return MonsterEntity.createMonsterAttributes().add(Attributes.ATTACK_KNOCKBACK, 1.25D).add(Attributes.KNOCKBACK_RESISTANCE, 0.35D).add(Attributes.MOVEMENT_SPEED, (double)0.225F).add(Attributes.FOLLOW_RANGE, 16.0D).add(Attributes.MAX_HEALTH, 60.0D).add(Attributes.ATTACK_DAMAGE, 8.0D);
+	@Override
+	public void aiStep() {
+		super.aiStep();
+		if (this.hurtTime > 0) {
+			this.setDeltaMovement(this.getDeltaMovement().add(0,-3.5,0));
+		}
+		if (this.ArmorHitTime > 0) {
+			this.ArmorHitTime --;
+		}
+		if (this.sprintCooldown > 0) {
+			this.sprintCooldown --;
+		}
+		if (this.powerfulAttackCooldown > 0) {
+			this.powerfulAttackCooldown --;
+		}
+		if (this.commandRoyalGuardCooldown > 0) {
+			this.commandRoyalGuardCooldown --;
+		}
+		if (this.ReduceDamageReduceCooldown > 0){
+			this.ReduceDamageReduceCooldown--;
+		}else {
+			this.DamageReduceMath += 0.333333F;
+			if (this.DamageReduceMath > 10){
+				this.DamageReduceMath = 10F;
+			}
+			this.DamageReduceInt = (int) Math.max(DamageReduceMath, 3);
+		}
+	}
+
+	public static AttributeModifierMap.MutableAttribute createAttributes() {
+	      return MonsterEntity.createMonsterAttributes()
+				  .add(Attributes.ATTACK_KNOCKBACK, 1.25D)
+				  .add(Attributes.KNOCKBACK_RESISTANCE, 0.75D)
+				  .add(Attributes.MOVEMENT_SPEED, (double)0.225F)
+				  .add(Attributes.FOLLOW_RANGE, 24.0D)
+				  .add(Attributes.MAX_HEALTH, 100.0D)
+				  .add(Attributes.ARMOR, 20.0D)
+				  .add(Attributes.ATTACK_DAMAGE, 8.0D);
 	   }
 
 	   public void addAdditionalSaveData(CompoundNBT p_213281_1_) {
@@ -176,7 +289,7 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 	   }
 
 	   public SoundEvent getCelebrateSound() {
-	      return SoundEvents.PILLAGER_AMBIENT;
+	      return SoundEvents.VILLAGER_CELEBRATE;
 	   }
 
 	   @Nullable
@@ -201,7 +314,7 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 	        }
 	        else{
 	            if (this.getCurrentRaid() == null) {
-	                this.setItemSlot(EquipmentSlotType.MAINHAND, new ItemStack(Items.IRON_SWORD));
+	                this.setItemSlot(EquipmentSlotType.MAINHAND, new ItemStack(Items.DIAMOND_SWORD));
 	            }
 	        }
 	    }
@@ -217,29 +330,34 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 	   }
 
 	   protected SoundEvent getAmbientSound() {
-		   return SoundEvents.PILLAGER_AMBIENT;
+		   return SoundEvents.VINDICATOR_AMBIENT;
 	   }
 
 	   protected SoundEvent getDeathSound() {
-		   return SoundEvents.PILLAGER_DEATH;
+		   return SoundEvents.VINDICATOR_DEATH;
 	   }
 
 	   protected SoundEvent getHurtSound(DamageSource p_184601_1_) {
-		   return SoundEvents.PILLAGER_HURT;
+		   return SoundEvents.VINDICATOR_HURT;
 	   }
+
+	@Override
+	protected void playStepSound(BlockPos p_180429_1_, BlockState p_180429_2_) {
+		this.playSound(SoundEvents.ARMOR_EQUIP_IRON, 0.75f, 1);
+	}
 
 	    @Override
 	    public void applyRaidBuffs(int waveAmount, boolean b) {
-	        ItemStack mainhandWeapon = new ItemStack(Items.IRON_SWORD);
+	        ItemStack mainhandWeapon = new ItemStack(Items.DIAMOND_SWORD);
 	        if(ModList.get().isLoaded("dungeons_gear")){
 	            Item MACE = ForgeRegistries.ITEMS.getValue(new ResourceLocation("dungeons_gear", "truthseeker"));
 
 	            mainhandWeapon = new ItemStack(MACE);
 	        }
 	        Raid raid = this.getCurrentRaid();
-	        int enchantmentLevel = 1;
+	        int enchantmentLevel = 3;
 	        if (raid != null && waveAmount > raid.getNumGroups(Difficulty.NORMAL)) {
-	            enchantmentLevel = 2;
+	            enchantmentLevel = 5;
 	        }
 
 	        boolean applyEnchant = false;
@@ -255,42 +373,420 @@ public class IllagerWardenEntity extends AbstractIllagerEntity implements IAnima
 	        this.setItemSlot(EquipmentSlotType.MAINHAND, mainhandWeapon);
 	    }
 
-	   class AttackGoal extends MeleeAttackGoal {
-	      public AttackGoal(IllagerWardenEntity p_i50577_2_) {
-	         super(p_i50577_2_, 1.0D, false);
-	      }
-	      
-	    public boolean canUse() {
-	    	return super.canUse();
-	    }
-	    
-	    public boolean canContinueToUse() {
-	    	return super.canContinueToUse();
-	    }
+	class AttackGoal extends MeleeAttackGoal {
+		   private int maxAttackTimer = 15;
+		   private final double moveSpeed;
+		   private int delayCounter;
+		   private int sr;
+		   private int attackTimer;
 
-	      protected double getAttackReachSqr(LivingEntity p_179512_1_) {
-	          return (double)(this.mob.getBbWidth() * 3.5F * this.mob.getBbWidth() * 3.5F + p_179512_1_.getBbWidth());
-	       }
-	      
-	      protected void checkAndPerformAttack(LivingEntity p_190102_1_, double p_190102_2_) {
-		         double d0 = this.getAttackReachSqr(p_190102_1_);
-		         if (p_190102_2_ <= d0 && this.isTimeToAttack()) {
-		            this.resetAttackCooldown();
-		            this.mob.doHurtTarget(p_190102_1_);
-		         } else if (p_190102_2_ <= d0 * 1.5D) {
-		            if (this.isTimeToAttack()) {
-		               this.resetAttackCooldown();
-		            }
+		   public IllagerWardenEntity v = IllagerWardenEntity.this;
 
-		            if (this.getTicksUntilNextAttack() <= 30) {
-		            	if (IllagerWardenEntity.this.getAttackTicks() <= 0) {
-		            	IllagerWardenEntity.this.setAttackTicks(30);
-		            	//IllagerWardenEntity.this.playSound(SoundEventInit.JAILOR_ATTACK.get(), 1.0F, IllagerWardenEntity.this.getVoicePitch());
-		            	}
-		            }
-		         } else {
-		            this.resetAttackCooldown();
-		         }
-		      }
+		   public AttackGoal(CreatureEntity creatureEntity, double moveSpeed) {
+			   super(creatureEntity, moveSpeed, true);
+			   this.moveSpeed = moveSpeed;
+		   }
+
+		   @Override
+		   public boolean canUse() {
+			   return v.getTarget() != null && v.getTarget().isAlive() && !v.entityData.get(IS_MELEE);
+		   }
+
+		   @Override
+		   public void start() {
+			   v.setAggressive(true);
+			   this.delayCounter = 0;
+			   //this.attackTimer = 0;
+		   }
+
+		public void tick() {
+			LivingEntity livingentity = v.getTarget();
+			v.getLookControl().setLookAt(livingentity, 30.0F, 30.0F);
+			double d0 = v.distanceToSqr(livingentity.getX(), livingentity.getY(), livingentity.getZ());
+
+			if (--this.delayCounter <= 0) {
+				this.delayCounter = 4 + v.getRandom().nextInt(7);
+				v.getNavigation().moveTo(livingentity, (double) this.moveSpeed);
+			}
+
+			this.attackTimer = Math.max(this.attackTimer - 1, 0);
+			this.checkAndPerformAttack(livingentity, v.distanceToSqr(livingentity.getX(), livingentity.getBoundingBox().minY, livingentity.getZ()));
+		}
+
+		   @Override
+		   protected void checkAndPerformAttack(LivingEntity enemy, double distToEnemySqr) {
+			   if ((distToEnemySqr + 15 + enemy.getBbWidth() <= this.getAttackReachSqr(enemy) || v.getBoundingBox().intersects(enemy.getBoundingBox())) && this.attackTimer <= 0) {
+				   this.attackTimer = maxAttackTimer;
+				   v.entityData.set(ATTACK_TYPE, 0);
+				   v.entityData.set(CAN_MELEE, true);
+			   }
+		   }
+
+		   @Override
+		   public void stop() {
+			   v.getNavigation().stop();
+			   if (v.getTarget() == null) {
+				   v.setAggressive(false);
+			   }
+		   }
+
+		   public IllagerWardenEntity.AttackGoal setMaxAttackTick(int max) {
+			   this.maxAttackTimer = max;
+			   return this;
+		   }
 	   }
+	class MeleeGoal extends Goal {
+		public IllagerWardenEntity v = IllagerWardenEntity.this;
+
+		public MeleeGoal() {
+			this.setFlags(EnumSet.of(Flag.LOOK, Flag.MOVE));
+		}
+
+		@Override
+		public boolean canUse() {
+			return v.getTarget() != null && v.entityData.get(CAN_MELEE) && v.entityData.get(ATTACK_TYPE) == 0;
+		}
+
+		@Override
+		public boolean canContinueToUse() {
+			//animation tick
+			return v.entityData.get(TIMER) <= 30;
+		}
+
+		@Override
+		public void start() {
+			v.entityData.set(ATTACK_TYPE, 0);
+			v.entityData.set(IS_MELEE, true);
+			v.entityData.set(TIMER, 0);
+		}
+
+		@Override
+		public void stop() {
+			v.entityData.set(TIMER, 0);
+			if (v.getTarget() != null && v.getTarget().isAlive()) {
+				if (v.distanceToSqr(v.getTarget()) <= 30) {
+					v.entityData.set(ATTACK_TYPE, 1);
+				}else {
+					v.entityData.set(ATTACK_TYPE, 0);
+					v.entityData.set(IS_MELEE, false);
+					v.entityData.set(CAN_MELEE, false);
+				}
+			}else {
+				v.setAggressive(false);
+				v.entityData.set(CAN_MELEE, false);
+				v.entityData.set(IS_MELEE, false);
+				v.entityData.set(ATTACK_TYPE, 0);
+			}
+		}
+
+		@Override
+		public void tick() {
+			v.entityData.set(TIMER, v.entityData.get(TIMER) + 1);
+			if (v.getTarget() != null && v.getTarget().isAlive()) {
+				v.getLookControl().setLookAt(v.getTarget(), 30.0F, 30.0F);
+				if (v.entityData.get(TIMER) == 22) {
+					v.playSound(SoundEvents.PLAYER_ATTACK_CRIT,1,1);
+					if (v.distanceToSqr(v.getTarget()) <= 12 + v.getTarget().getBbWidth()) {
+						v.doHurtTarget(v.getTarget());
+					}
+				}
+				if (v.entityData.get(TIMER) == 17) {
+					v.setDeltaMovement(v.getDeltaMovement().add((v.getTarget().getX() - v.getX()) / Math.PI ,0,(v.getTarget().getZ() - v.getZ()) / Math.PI));
+				}
+			}
+
+		}
+
 	}
+	class Melee3Goal extends Goal {
+		public IllagerWardenEntity v = IllagerWardenEntity.this;
+
+		public Melee3Goal() {
+			this.setFlags(EnumSet.of(Flag.LOOK, Flag.MOVE));
+		}
+
+		@Override
+		public boolean canUse() {
+			return v.entityData.get(ATTACK_TYPE) == 2;
+		}
+
+		@Override
+		public boolean canContinueToUse() {
+			//animation tick
+			return v.entityData.get(TIMER) <= 30;
+		}
+
+		@Override
+		public void start() {
+			v.entityData.set(ATTACK_TYPE, 2);
+			v.entityData.set(IS_MELEE, true);
+			v.entityData.set(TIMER, 0);
+		}
+
+		@Override
+		public void stop() {
+			v.entityData.set(TIMER, 0);
+			if (v.getTarget() != null && v.getTarget().isAlive()) {
+				if (v.distanceToSqr(v.getTarget()) <= 30) {
+					v.entityData.set(ATTACK_TYPE, 3);
+				}else {
+					v.entityData.set(ATTACK_TYPE, 0);
+					v.entityData.set(IS_MELEE, false);
+					v.entityData.set(CAN_MELEE, false);
+				}
+			}else {
+				v.setAggressive(false);
+				v.entityData.set(CAN_MELEE, false);
+				v.entityData.set(IS_MELEE, false);
+				v.entityData.set(ATTACK_TYPE, 0);
+			}
+		}
+
+		@Override
+		public void tick() {
+			v.entityData.set(TIMER, v.entityData.get(TIMER) + 1);
+			if (v.getTarget() != null && v.getTarget().isAlive()) {
+				v.getLookControl().setLookAt(v.getTarget(), 30.0F, 30.0F);
+				if (v.entityData.get(TIMER) == 8) {
+					v.playSound(SoundEvents.PLAYER_ATTACK_SWEEP,1,1);
+					if (v.distanceToSqr(v.getTarget()) <= 12 + v.getTarget().getBbWidth()) {
+						v.doHurtTarget(v.getTarget());
+					}
+				}
+				if (v.entityData.get(TIMER) == 2) {
+					v.setDeltaMovement(v.getDeltaMovement().add((v.getTarget().getX() - v.getX()) / Math.PI ,0,(v.getTarget().getZ() - v.getZ()) / Math.PI));
+				}
+			}
+
+		}
+
+	}
+	class MeleeEndGoal extends Goal {
+		public IllagerWardenEntity v = IllagerWardenEntity.this;
+
+		public MeleeEndGoal() {
+			this.setFlags(EnumSet.of(Flag.LOOK, Flag.MOVE));
+		}
+
+		@Override
+		public boolean canUse() {
+			return v.entityData.get(ATTACK_TYPE) == 3;
+		}
+
+		@Override
+		public boolean canContinueToUse() {
+			//animation tick
+			return v.entityData.get(TIMER) <= 30;
+		}
+
+		@Override
+		public void start() {
+			v.entityData.set(ATTACK_TYPE, 3);
+			v.entityData.set(IS_MELEE, true);
+			v.entityData.set(TIMER, 0);
+		}
+
+		@Override
+		public void stop() {
+			v.entityData.set(ATTACK_TYPE, 0);
+			v.entityData.set(TIMER, 0);
+			v.entityData.set(IS_MELEE, false);
+			v.entityData.set(CAN_MELEE, false);
+			if (v.getTarget() == null) {
+				v.setAggressive(false);
+			}
+		}
+
+		@Override
+		public void tick() {
+			v.entityData.set(TIMER, v.entityData.get(TIMER) + 1);
+			if (v.getTarget() != null && v.getTarget().isAlive()) {
+				v.getLookControl().setLookAt(v.getTarget(), 30.0F, 30.0F);
+				if (v.entityData.get(TIMER) == 8) {
+					v.playSound(SoundEvents.PLAYER_ATTACK_SWEEP,1,1);
+					if (v.distanceToSqr(v.getTarget()) <= 12 + v.getTarget().getBbWidth()) {
+						v.doHurtTarget(v.getTarget());
+					}
+				}
+				if (v.entityData.get(TIMER) == 2) {
+					v.setDeltaMovement(v.getDeltaMovement().add((v.getTarget().getX() - v.getX()) / Math.PI ,0,(v.getTarget().getZ() - v.getZ()) / Math.PI));
+				}
+			}
+
+		}
+
+	}
+	class Melee2Goal extends Goal {
+		public IllagerWardenEntity v = IllagerWardenEntity.this;
+
+		public Melee2Goal() {
+			this.setFlags(EnumSet.of(Flag.LOOK, Flag.MOVE));
+		}
+
+		@Override
+		public boolean canUse() {
+			return v.entityData.get(ATTACK_TYPE) == 1;
+		}
+
+		@Override
+		public boolean canContinueToUse() {
+			//animation tick
+			return v.entityData.get(TIMER) <= 30;
+		}
+
+		@Override
+		public void start() {
+			v.entityData.set(ATTACK_TYPE, 1);
+			v.entityData.set(IS_MELEE, true);
+			v.entityData.set(TIMER, 0);
+		}
+
+		@Override
+		public void stop() {
+			v.entityData.set(TIMER, 0);
+			if (v.getTarget() != null && v.getTarget().isAlive()) {
+				if (v.distanceToSqr(v.getTarget()) <= 30) {
+					v.entityData.set(ATTACK_TYPE, 2);
+				}else {
+					v.entityData.set(ATTACK_TYPE, 0);
+					v.entityData.set(IS_MELEE, false);
+					v.entityData.set(CAN_MELEE, false);
+				}
+			}else {
+				v.setAggressive(false);
+				v.entityData.set(ATTACK_TYPE, 0);
+				v.entityData.set(CAN_MELEE, false);
+				v.entityData.set(IS_MELEE, false);
+			}
+		}
+
+		@Override
+		public void tick() {
+			v.entityData.set(TIMER, v.entityData.get(TIMER) + 1);
+			if (v.getTarget() != null && v.getTarget().isAlive()) {
+				v.getLookControl().setLookAt(v.getTarget(), 30.0F, 30.0F);
+				if (v.entityData.get(TIMER) == 18) {
+					v.playSound(SoundEvents.PLAYER_ATTACK_SWEEP,1,1);
+					if (v.distanceToSqr(v.getTarget()) <= 12 + v.getTarget().getBbWidth()) {
+						v.doHurtTarget(v.getTarget());
+					}
+				}
+				if (v.entityData.get(TIMER) == 13) {
+					v.setDeltaMovement(v.getDeltaMovement().add((v.getTarget().getX() - v.getX()) / Math.PI ,0,(v.getTarget().getZ() - v.getZ()) / Math.PI));
+				}
+			}else {
+				v.entityData.set(IS_MELEE, false);
+			}
+
+		}
+
+	}
+	class ThumpGoal extends Goal {
+
+		private int r;
+		public IllagerWardenEntity v = IllagerWardenEntity.this;
+
+		public ThumpGoal() {
+			this.setFlags(EnumSet.of(Flag.LOOK, Flag.MOVE, Flag.JUMP));
+		}
+
+		@Override
+		public boolean isInterruptable() {
+			return false;
+		}
+
+		@Override
+		public boolean canUse() {
+			return v.getTarget() != null &&
+					v.powerfulAttackCooldown <= 0 &&
+					v.distanceToSqr(v.getTarget()) <= 60;
+		}
+
+		@Override
+		public boolean canContinueToUse() {
+			//animation tick
+			return v.entityData.get(TIMER) <= (int) (140 / 1.5);
+		}
+
+		@Override
+		public void start() {
+			v.powerfulAttackCooldown = 200;
+			v.entityData.set(IS_THUMP, true);
+			v.entityData.set(TIMER, 0);
+		}
+
+		@Override
+		public void stop() {
+			v.entityData.set(IS_THUMP, false);
+			v.entityData.set(TIMER, 0);
+		}
+
+		private void Attackparticle(int paticle,float circle, float vec, float math) {
+			if (v.level.isClientSide) {
+				for (int i1 = 0; i1 < paticle; i1++) {
+					double DeltaMovementX = getRandom().nextGaussian() * 0.07D;
+					double DeltaMovementY = getRandom().nextGaussian() * 0.07D;
+					double DeltaMovementZ = getRandom().nextGaussian() * 0.07D;
+					float angle = (0.01745329251F * v.yBodyRot) + i1;
+					float f = MathHelper.cos(v.yRot * ((float)Math.PI / 180F)) ;
+					float f1 = MathHelper.sin(v.yRot * ((float)Math.PI / 180F)) ;
+					double extraX = circle * MathHelper.sin((float) (Math.PI + angle));
+					double extraY = 0.3F;
+					double extraZ = circle * MathHelper.cos(angle);
+					double theta = (yBodyRot) * (Math.PI / 180);
+					theta += Math.PI / 2;
+					double vecX = Math.cos(theta);
+					double vecZ = Math.sin(theta);
+					int hitX = MathHelper.floor(getX() + vec * vecX+ extraX);
+					int hitY = MathHelper.floor(getY());
+					int hitZ = MathHelper.floor(getZ() + vec * vecZ + extraZ);
+					BlockPos hit = new BlockPos(hitX, hitY, hitZ);
+					BlockState block = level.getBlockState(hit.below());
+					v.level.addParticle(new BlockParticleData(ParticleTypes.BLOCK, block), getX() + vec * vecX + extraX + f * math, v.getY() + extraY, getZ() + vec * vecZ + extraZ + f1 * math, DeltaMovementX, DeltaMovementY, DeltaMovementZ);
+
+				}
+			}
+		}
+
+		public void ExplosionCloud(){
+			AreaEffectCloudEntity areaeffectcloudentity = new AreaEffectCloudEntity(v.level, v.getX(), v.getY(0.5), v.getZ());
+			areaeffectcloudentity.setParticle(ParticleTypes.EXPLOSION);
+			areaeffectcloudentity.setRadius(4.25F);
+			areaeffectcloudentity.setDuration(10);
+			v.level.addFreshEntity(areaeffectcloudentity);
+			v.playSound(SoundEvents.GENERIC_EXPLODE, 1, 1);
+		}
+
+		@Override
+		public void tick() {
+			v.entityData.set(TIMER, v.entityData.get(TIMER) + 1);
+			if (v.getTarget() != null) {
+				float f = (float) MathHelper.atan2(v.getTarget().getZ() - v.getZ(), v.getTarget().getX() - v.getX());
+				if (v.entityData.get(TIMER) == (int) (44 / 1.5)) {
+					this.Attackparticle(30, 0.2F, 1.15F, 0);
+					this.ExplosionCloud();
+
+					List<Entity> list = Lists.newArrayList(v.level.getEntities(v, v.getBoundingBox().inflate(8, 8 + v.getTarget().getBbHeight(), 8)));
+					for(Entity entity : list) {
+						if(entity instanceof LivingEntity && (!v.isAlliedTo(entity) && entity != v.getTarget())){
+							LivingEntity livingEntity = (LivingEntity)entity;
+							livingEntity.setDeltaMovement(
+									livingEntity.getDeltaMovement().add((v.getX() - livingEntity.getX()) / -3.14,0.6888 + livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE),(v.getZ() - livingEntity.getZ()) / -3.14)
+							);
+							livingEntity.hurt(DamageSource.mobAttack(v), (float) v.getAttributeBaseValue(Attributes.ATTACK_DAMAGE));
+						}
+					}
+					if(v.distanceToSqr(v.getTarget()) <= 50){
+						LivingEntity livingEntity = (LivingEntity)v.getTarget();
+						livingEntity.setDeltaMovement(
+								livingEntity.getDeltaMovement().add((v.getX() - livingEntity.getX()) / -3.14,0.6888 + livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE),(v.getZ() - livingEntity.getZ()) / -3.14)
+						);
+						livingEntity.hurt(DamageSource.mobAttack(v), (float) v.getAttributeBaseValue(Attributes.ATTACK_DAMAGE));
+					}
+				}
+			}
+
+		}
+
+	}
+}

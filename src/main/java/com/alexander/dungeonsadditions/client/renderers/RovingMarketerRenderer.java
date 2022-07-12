@@ -1,7 +1,7 @@
-package com.alexander.dungeonsadditions.renderers;
+package com.alexander.dungeonsadditions.client.renderers;
 
+import com.alexander.dungeonsadditions.client.models.RovingMarketerModel;
 import com.alexander.dungeonsadditions.entities.RovingMarketerEntity;
-import com.alexander.dungeonsadditions.models.entity.RovingMarketerModel;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 

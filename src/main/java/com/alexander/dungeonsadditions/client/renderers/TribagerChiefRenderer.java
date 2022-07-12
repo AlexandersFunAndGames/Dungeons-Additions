@@ -1,7 +1,7 @@
-package com.alexander.dungeonsadditions.renderers;
+package com.alexander.dungeonsadditions.client.renderers;
 
-import com.alexander.dungeonsadditions.entities.EliteEvokerEntity;
-import com.alexander.dungeonsadditions.models.entity.EliteEvokerModel;
+import com.alexander.dungeonsadditions.client.models.TribagerChiefModel;
+import com.alexander.dungeonsadditions.entities.TribagerChiefEntity;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
@@ -15,20 +15,20 @@ import net.minecraft.util.math.vector.Vector3f;
 import software.bernie.geckolib3.geo.render.built.GeoBone;
 import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
 
-public class EliteEvokerRenderer extends GeoEntityRenderer<EliteEvokerEntity> {
-	public EliteEvokerRenderer(EntityRendererManager renderManager) {
-		super(renderManager, new EliteEvokerModel());
+public class TribagerChiefRenderer extends GeoEntityRenderer<TribagerChiefEntity> {
+	public TribagerChiefRenderer(EntityRendererManager renderManager) {
+		super(renderManager, new TribagerChiefModel());
 	}
 	
-	protected void applyRotations(EliteEvokerEntity entityLiving, MatrixStack matrixStackIn, float ageInTicks,
+	protected void applyRotations(TribagerChiefEntity entityLiving, MatrixStack matrixStackIn, float ageInTicks,
 			float rotationYaw, float partialTicks) {
-        float scaleFactor = 0.9375F;
+        float scaleFactor = 1.3375F;
         matrixStackIn.scale(scaleFactor, scaleFactor, scaleFactor);
 		super.applyRotations(entityLiving, matrixStackIn, ageInTicks, rotationYaw, partialTicks);
 	}
 
 	@Override
-	public RenderType getRenderType(EliteEvokerEntity animatable, float partialTicks, MatrixStack stack,
+	public RenderType getRenderType(TribagerChiefEntity animatable, float partialTicks, MatrixStack stack,
 			IRenderTypeBuffer renderTypeBuffer, IVertexBuilder vertexBuilder, int packedLightIn,
 			ResourceLocation textureLocation) {
 		return RenderType.entityTranslucent(getTextureLocation(animatable));

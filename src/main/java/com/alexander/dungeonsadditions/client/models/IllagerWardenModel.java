@@ -1,4 +1,4 @@
-package com.alexander.dungeonsadditions.models.entity;
+package com.alexander.dungeonsadditions.client.models;
 
 import com.alexander.dungeonsadditions.DungeonsAdditions;
 
@@ -10,21 +10,21 @@ import software.bernie.geckolib3.core.processor.IBone;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 import software.bernie.geckolib3.model.provider.data.EntityModelData;
 
-public class TribagerChiefModel extends AnimatedGeoModel {
+public class IllagerWardenModel extends AnimatedGeoModel {
 	   
 		@Override
 		public ResourceLocation getAnimationFileLocation(Object entity) {
-			return new ResourceLocation(DungeonsAdditions.MOD_ID, "animations/tribal_illager_chief.animation.json");
+			return new ResourceLocation(DungeonsAdditions.MOD_ID, "animations/illager_warden.animation.json");
 		}
 
 		@Override
 		public ResourceLocation getModelLocation(Object entity) {
-			return new ResourceLocation(DungeonsAdditions.MOD_ID, "geo/tribal_illager_chief.geo.json");
+			return new ResourceLocation(DungeonsAdditions.MOD_ID, "geo/illager_warden.geo.json");
 		}
 
 		@Override
 		public ResourceLocation getTextureLocation(Object entity) {
-				return new ResourceLocation(DungeonsAdditions.MOD_ID, "textures/entities/tribal_illager_chief.png");
+				return new ResourceLocation(DungeonsAdditions.MOD_ID, "textures/entities/illager_warden.png");
 		}
 
 		@Override
@@ -32,11 +32,9 @@ public class TribagerChiefModel extends AnimatedGeoModel {
 			super.setLivingAnimations(entity, uniqueID, customPredicate);
 			IBone head = this.getAnimationProcessor().getBone("head");
 			
-			IBone spear = this.getAnimationProcessor().getBone("sword");
-			IBone dartBlower = this.getAnimationProcessor().getBone("dartthrower");
-			
-			//spear.setHidden(true);
-			//dartBlower.setHidden(true);
+			IBone knife = this.getAnimationProcessor().getBone("sword");
+
+			knife.setHidden(true);
 			
 			LivingEntity entityIn = (LivingEntity) entity;
 			EntityModelData extraData = (EntityModelData) customPredicate.getExtraDataOfType(EntityModelData.class).get(0);

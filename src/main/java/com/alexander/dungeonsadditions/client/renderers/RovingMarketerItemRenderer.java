@@ -1,4 +1,4 @@
-package com.alexander.dungeonsadditions.renderers;
+package com.alexander.dungeonsadditions.client.renderers;
 
 import java.util.Random;
 

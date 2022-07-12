@@ -1,7 +1,7 @@
-package com.alexander.dungeonsadditions.renderers;
+package com.alexander.dungeonsadditions.client.renderers;
 
-import com.alexander.dungeonsadditions.entities.TribagerChiefEntity;
-import com.alexander.dungeonsadditions.models.entity.TribagerChiefModel;
+import com.alexander.dungeonsadditions.client.models.IllagerWardenModel;
+import com.alexander.dungeonsadditions.entities.IllagerWardenEntity;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
@@ -15,20 +15,21 @@ import net.minecraft.util.math.vector.Vector3f;
 import software.bernie.geckolib3.geo.render.built.GeoBone;
 import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
 
-public class TribagerChiefRenderer extends GeoEntityRenderer<TribagerChiefEntity> {
-	public TribagerChiefRenderer(EntityRendererManager renderManager) {
-		super(renderManager, new TribagerChiefModel());
+public class IllagerWardenRenderer extends GeoEntityRenderer<IllagerWardenEntity> {
+	@SuppressWarnings("unchecked")
+	public IllagerWardenRenderer(EntityRendererManager renderManager) {
+		super(renderManager, new IllagerWardenModel());
 	}
 	
-	protected void applyRotations(TribagerChiefEntity entityLiving, MatrixStack matrixStackIn, float ageInTicks,
+	protected void applyRotations(IllagerWardenEntity entityLiving, MatrixStack matrixStackIn, float ageInTicks,
 			float rotationYaw, float partialTicks) {
-        float scaleFactor = 1.3375F;
+        float scaleFactor = 1.0F;
         matrixStackIn.scale(scaleFactor, scaleFactor, scaleFactor);
 		super.applyRotations(entityLiving, matrixStackIn, ageInTicks, rotationYaw, partialTicks);
 	}
 
 	@Override
-	public RenderType getRenderType(TribagerChiefEntity animatable, float partialTicks, MatrixStack stack,
+	public RenderType getRenderType(IllagerWardenEntity animatable, float partialTicks, MatrixStack stack,
 			IRenderTypeBuffer renderTypeBuffer, IVertexBuilder vertexBuilder, int packedLightIn,
 			ResourceLocation textureLocation) {
 		return RenderType.entityTranslucent(getTextureLocation(animatable));
