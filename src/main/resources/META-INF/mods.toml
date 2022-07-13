@@ -4,7 +4,7 @@ license="MIT"
 [[mods]] #mandatory
 
 modId="dungeonsadditions" #mandatory
-version="1.0.3" #mandatory
+version="0.0.1" #mandatory
 displayName="Dungeons Additions" #mandatory
 logoFile="examplemod.png" #optional
 credits="This mod is part of a group of mods adding Minecraft Dungeons into Minecraft! Here's the link to one you might like: https://www.curseforge.com/minecraft/mc-mods/dungeons-mobs" #optional

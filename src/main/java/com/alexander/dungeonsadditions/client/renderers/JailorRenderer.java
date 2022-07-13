@@ -1,7 +1,7 @@
-package com.alexander.dungeonsadditions.renderers;
+package com.alexander.dungeonsadditions.client.renderers;
 
 import com.alexander.dungeonsadditions.entities.JailorEntity;
-import com.alexander.dungeonsadditions.models.entity.JailorModel;
+import com.alexander.dungeonsadditions.client.models.JailorModel;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 

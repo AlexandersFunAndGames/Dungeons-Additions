@@ -1,4 +1,4 @@
-package com.alexander.dungeonsadditions.models.entity;
+package com.alexander.dungeonsadditions.client.models;
 
 import com.alexander.dungeonsadditions.DungeonsAdditions;
 
@@ -10,27 +10,31 @@ import software.bernie.geckolib3.core.processor.IBone;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 import software.bernie.geckolib3.model.provider.data.EntityModelData;
 
-public class EliteEvokerModel extends AnimatedGeoModel {
+public class JailorModel extends AnimatedGeoModel {
 	   
 		@Override
 		public ResourceLocation getAnimationFileLocation(Object entity) {
-			return new ResourceLocation(DungeonsAdditions.MOD_ID, "animations/elite_evoker.animation.json");
+			return new ResourceLocation(DungeonsAdditions.MOD_ID, "animations/jailor.animation.json");
 		}
 
 		@Override
 		public ResourceLocation getModelLocation(Object entity) {
-			return new ResourceLocation(DungeonsAdditions.MOD_ID, "geo/elite_evoker.geo.json");
+			return new ResourceLocation(DungeonsAdditions.MOD_ID, "geo/jailor.geo.json");
 		}
 
 		@Override
 		public ResourceLocation getTextureLocation(Object entity) {
-				return new ResourceLocation(DungeonsAdditions.MOD_ID, "textures/entities/elite_evoker.png");
+				return new ResourceLocation(DungeonsAdditions.MOD_ID, "textures/entities/jailor.png");
 		}
 
 		@Override
 		public void setLivingAnimations(IAnimatable entity, Integer uniqueID, AnimationEvent customPredicate) {
 			super.setLivingAnimations(entity, uniqueID, customPredicate);
 			IBone head = this.getAnimationProcessor().getBone("head");
+			
+			IBone scythe = this.getAnimationProcessor().getBone("rapier");
+
+			scythe.setHidden(true);
 			
 			LivingEntity entityIn = (LivingEntity) entity;
 			EntityModelData extraData = (EntityModelData) customPredicate.getExtraDataOfType(EntityModelData.class).get(0);
