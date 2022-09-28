@@ -18,11 +18,15 @@ public class RaidEntries {
 
         // WARRIOR         
     		if (DungeonsAdditionsConfig.jailor_raid_spawning.get()) {
-    			Raid.WaveMember.create("jailor", EntityTypeInit.JAILOR.get(), new int[]{0, 0, 0, 1, 0, 3, 0, 5});
+    			Raid.WaveMember.create("jailor", EntityTypeInit.JAILOR.get(), new int[]{0, 0, 0, 1, 2, 3, 1, 5});
     		}
+
+			if (DungeonsAdditionsConfig.jailor_raid_spawning.get()) {
+				Raid.WaveMember.create("samurai", EntityTypeInit.SAMURAI.get(), new int[]{0, 2, 0, 1, 0, 1, 1, 2});
+			}
     		
     		if (DungeonsAdditionsConfig.illager_warden_raid_spawning.get()) {
-    			Raid.WaveMember.create("illager_warden", EntityTypeInit.ILLAGER_WARDEN.get(), new int[]{0, 0, 0, 0, 1, 1, 2, 4});
+    			Raid.WaveMember.create("illager_warden", EntityTypeInit.ILLAGER_WARDEN.get(), new int[]{0, 0, 0, 1, 0, 1, 2, 2});
     		}
     		
     		if (DungeonsAdditionsConfig.elite_evoker_raid_spawning.get()) {
