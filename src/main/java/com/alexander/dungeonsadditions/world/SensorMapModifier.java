@@ -20,6 +20,7 @@ public class SensorMapModifier {
         villagerHostiles.put(EntityTypeInit.JAILOR.get(), 5.0F);
         villagerHostiles.put(EntityTypeInit.ILLAGER_WARDEN.get(), 7.5F);
         villagerHostiles.put(EntityTypeInit.ELITE_EVOKER.get(), 15.0F);
+        villagerHostiles.put(EntityTypeInit.SAMURAI.get(), 8.0F);
 
         VillagerHostilesSensor.ACCEPTABLE_DISTANCE_FROM_HOSTILES = ImmutableMap.copyOf(villagerHostiles);
     }
