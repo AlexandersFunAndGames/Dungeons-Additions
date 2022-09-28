@@ -1,15 +1,10 @@
 package com.alexander.dungeonsadditions;
 
+import com.alexander.dungeonsadditions.entities.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.alexander.dungeonsadditions.config.DungeonsAdditionsConfig;
-import com.alexander.dungeonsadditions.entities.EliteEvokerEntity;
-import com.alexander.dungeonsadditions.entities.IllagerWardenEntity;
-import com.alexander.dungeonsadditions.entities.JailorEntity;
-import com.alexander.dungeonsadditions.entities.RovingMarketerEntity;
-import com.alexander.dungeonsadditions.entities.TribagerChiefEntity;
-import com.alexander.dungeonsadditions.entities.TribagerEntity;
 import com.alexander.dungeonsadditions.init.EntityTypeInit;
 import com.alexander.dungeonsadditions.init.ItemInit;
 import com.alexander.dungeonsadditions.init.SoundEventInit;
@@ -68,7 +63,8 @@ public class DungeonsAdditions
         
     	DeferredWorkQueue.runLater(() -> {
     		GlobalEntityTypeAttributes.put(EntityTypeInit.JAILOR.get(), JailorEntity.createAttributes().build());
-    		GlobalEntityTypeAttributes.put(EntityTypeInit.ILLAGER_WARDEN.get(), IllagerWardenEntity.createAttributes().build());
+			GlobalEntityTypeAttributes.put(EntityTypeInit.SAMURAI.get(), SamuraiEntity.createAttributes().build());
+			GlobalEntityTypeAttributes.put(EntityTypeInit.ILLAGER_WARDEN.get(), IllagerWardenEntity.createAttributes().build());
     		GlobalEntityTypeAttributes.put(EntityTypeInit.ELITE_EVOKER.get(), EliteEvokerEntity.createAttributes().build());
     		GlobalEntityTypeAttributes.put(EntityTypeInit.TRIBAGER.get(), TribagerEntity.createAttributes().build());
     		GlobalEntityTypeAttributes.put(EntityTypeInit.TRIBAGER_CHIEF.get(), TribagerChiefEntity.createAttributes().build());
