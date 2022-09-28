@@ -7,6 +7,7 @@ public final class DungeonsAdditionsConfig {
 	public static final ForgeConfigSpec SPEC;
 	
 	public static final ForgeConfigSpec.ConfigValue<Boolean> jailor_raid_spawning;
+	public static final ForgeConfigSpec.ConfigValue<Boolean> samurai_raid_spawning;
 	public static final ForgeConfigSpec.ConfigValue<Boolean> illager_warden_raid_spawning;
 	public static final ForgeConfigSpec.ConfigValue<Boolean> elite_evoker_raid_spawning;
 	
@@ -17,6 +18,7 @@ public final class DungeonsAdditionsConfig {
 		
 		BUILDER.comment("\r\n" + "Spawn Configurations" + "\r\n");
 		jailor_raid_spawning = BUILDER.comment("\r\n" + "Controlls whether the Jailor spawns in raids, usually set to true").define("Jailor Raid Spawning", true);
+		samurai_raid_spawning = BUILDER.comment("\r\n" + "Controlls whether the Samurai spawns in raids, usually set to true").define("Samurai Raid Spawning", true);
 		illager_warden_raid_spawning = BUILDER.comment("\r\n" + "Controlls whether the Illager Warden spawns in raids, usually set to true").define("Illager Warden Raid Spawning", true);
 		elite_evoker_raid_spawning = BUILDER.comment("\r\n" + "Controlls whether the Elite Evoker spawns in raids, usually set to true").define("Elite Evoker Raid Spawning", true);
 		
