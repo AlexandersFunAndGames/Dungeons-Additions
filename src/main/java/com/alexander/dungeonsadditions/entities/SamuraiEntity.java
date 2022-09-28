@@ -393,8 +393,6 @@ public class SamuraiEntity extends AbstractIllagerEntity implements IAnimatable 
     }
 
     private <P extends IAnimatable> PlayState predicate(AnimationEvent<P> event) {
-        event.getController().animationSpeed = 1;
-
         if (this.entityData.get(IS_PULLING_OUT_WEAPON)) {
             event.getController().setAnimation(new AnimationBuilder().addAnimation("pull_out_weapon", true));
         } else

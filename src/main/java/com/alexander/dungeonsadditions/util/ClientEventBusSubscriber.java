@@ -1,22 +1,14 @@
-package com.alexander.dungeonsadditions.client;
+package com.alexander.dungeonsadditions.util;
 
 import com.alexander.dungeonsadditions.DungeonsAdditions;
-import com.alexander.dungeonsadditions.client.models.IllagerWardenModel;
-import com.alexander.dungeonsadditions.client.models.armor.SamuraiArmorModel;
-import com.alexander.dungeonsadditions.client.models.armor.SamuraiClothesModel;
+import com.alexander.dungeonsadditions.models.SamuraiArmorModel;
+import com.alexander.dungeonsadditions.models.SamuraiClothesModel;
 import com.alexander.dungeonsadditions.client.renderers.DefaultExtendedGeoEntityRenderer;
 import com.alexander.dungeonsadditions.client.renderers.armor.BaseDungeonsGeoArmorRenderer;
 import com.alexander.dungeonsadditions.init.EntityTypeInit;
-import com.alexander.dungeonsadditions.client.renderers.illager.EliteEvokerRenderer;
-import com.alexander.dungeonsadditions.client.renderers.illager.IllagerWardenRenderer;
-import com.alexander.dungeonsadditions.client.renderers.illager.JailorRenderer;
-import com.alexander.dungeonsadditions.client.renderers.illager.RovingMarketerItemRenderer;
-import com.alexander.dungeonsadditions.client.renderers.illager.RovingMarketerRenderer;
-import com.alexander.dungeonsadditions.client.renderers.illager.TribagerChiefRenderer;
-import com.alexander.dungeonsadditions.client.renderers.illager.TribagerRenderer;
-
 import com.alexander.dungeonsadditions.items.SamuraiArmorItem;
 import com.alexander.dungeonsadditions.items.SamuraiClothesItem;
+import com.alexander.dungeonsadditions.renderers.*;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

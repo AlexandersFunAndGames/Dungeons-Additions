@@ -1,5 +1,6 @@
 {
 	"entity.dungeonsadditions.jailor" : "Jailor",
+	"entity.dungeonsadditions.samurai" : "Samurai",
 	"entity.dungeonsadditions.illager_warden" : "Illager Warden",
 	"entity.dungeonsadditions.elite_evoker" : "Elite Evoker",
 	"entity.dungeonsadditions.tribager" : "Tribager Warrior",
@@ -9,7 +10,17 @@
 	
 	"item.dungeonsadditions.tribal_spear" : "Tribal Spear",
 		
+	"item.dungeonsadditions.samurai_helmet" : "Samurai Helmet",
+	"item.dungeonsadditions.samurai_chestplate" : "Samurai Chestplate",
+	"item.dungeonsadditions.samurai_leggings" : "Samurai Leggings",
+	"item.dungeonsadditions.samurai_boots" : "Samurai Boots",
+		
+	"item.dungeonsadditions.samurai_robes" : "Samurai Robes",
+	"item.dungeonsadditions.samurai_pants" : "Samurai Pants",
+	"item.dungeonsadditions.samurai_shoes" : "Samurai Shoes",
+		
 	"item.dungeonsadditions.jailor_spawn_egg" : "Jailor Spawn Egg",
+	"item.dungeonsadditions.samurai_spawn_egg" : "Samurai Spawn Egg",
 	"item.dungeonsadditions.illager_warden_spawn_egg" : "Illager Warden Spawn Egg",
 	"item.dungeonsadditions.elite_evoker_spawn_egg" : "Elite Evoker Spawn Egg",
 	"item.dungeonsadditions.tribager_spawn_egg" : "Tribager Warrior Spawn Egg",
