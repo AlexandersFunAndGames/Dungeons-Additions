@@ -1,15 +1,22 @@
-package com.alexander.dungeonsadditions.util;
+package com.alexander.dungeonsadditions.client;
 
 import com.alexander.dungeonsadditions.DungeonsAdditions;
+import com.alexander.dungeonsadditions.client.models.IllagerWardenModel;
+import com.alexander.dungeonsadditions.client.models.armor.SamuraiArmorModel;
+import com.alexander.dungeonsadditions.client.models.armor.SamuraiClothesModel;
+import com.alexander.dungeonsadditions.client.renderers.DefaultExtendedGeoEntityRenderer;
+import com.alexander.dungeonsadditions.client.renderers.armor.BaseDungeonsGeoArmorRenderer;
 import com.alexander.dungeonsadditions.init.EntityTypeInit;
-import com.alexander.dungeonsadditions.renderers.EliteEvokerRenderer;
-import com.alexander.dungeonsadditions.renderers.IllagerWardenRenderer;
-import com.alexander.dungeonsadditions.renderers.JailorRenderer;
-import com.alexander.dungeonsadditions.renderers.RovingMarketerItemRenderer;
-import com.alexander.dungeonsadditions.renderers.RovingMarketerRenderer;
-import com.alexander.dungeonsadditions.renderers.TribagerChiefRenderer;
-import com.alexander.dungeonsadditions.renderers.TribagerRenderer;
+import com.alexander.dungeonsadditions.client.renderers.illager.EliteEvokerRenderer;
+import com.alexander.dungeonsadditions.client.renderers.illager.IllagerWardenRenderer;
+import com.alexander.dungeonsadditions.client.renderers.illager.JailorRenderer;
+import com.alexander.dungeonsadditions.client.renderers.illager.RovingMarketerItemRenderer;
+import com.alexander.dungeonsadditions.client.renderers.illager.RovingMarketerRenderer;
+import com.alexander.dungeonsadditions.client.renderers.illager.TribagerChiefRenderer;
+import com.alexander.dungeonsadditions.client.renderers.illager.TribagerRenderer;
 
+import com.alexander.dungeonsadditions.items.SamuraiArmorItem;
+import com.alexander.dungeonsadditions.items.SamuraiClothesItem;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -17,33 +24,29 @@ import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import software.bernie.geckolib3.renderers.geo.GeoArmorRenderer;
 
 @Mod.EventBusSubscriber(modid = DungeonsAdditions.MOD_ID, bus = Bus.MOD, value = Dist.CLIENT)
 public class ClientEventBusSubscriber {
 
 		@SubscribeEvent
-		public static void clientSetup(FMLClientSetupEvent event) {
-			
-		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.JAILOR.get(),
-		    	    manager -> new JailorRenderer(manager));
-		    
-		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.ILLAGER_WARDEN.get(),
-		    	    manager -> new IllagerWardenRenderer(manager));
-		    
-		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.ELITE_EVOKER.get(),
-		    	    manager -> new EliteEvokerRenderer(manager));
-		    
-		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.TRIBAGER.get(),
-		    	    manager -> new TribagerRenderer(manager));
-		    
-		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.TRIBAGER_CHIEF.get(),
-		    	    manager -> new TribagerChiefRenderer(manager));
+		public static void clientSetup(final FMLClientSetupEvent event) {
 
-		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.ROVING_MARKETER.get(),
-		    	    manager -> new RovingMarketerRenderer(manager));
-		    
-		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.ROVING_MARKETER_ITEM.get(),
-		    	    manager -> new RovingMarketerItemRenderer(manager, Minecraft.getInstance().getItemRenderer()));
+			GeoArmorRenderer.registerArmorRenderer(SamuraiArmorItem.class, () ->
+					new BaseDungeonsGeoArmorRenderer<SamuraiArmorItem>(new SamuraiArmorModel()));
+
+			GeoArmorRenderer.registerArmorRenderer(SamuraiClothesItem.class, () ->
+					new BaseDungeonsGeoArmorRenderer<SamuraiClothesItem>(new SamuraiClothesModel()));
+
+		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.JAILOR.get(), JailorRenderer::new);
+			RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.SAMURAI.get(), manager -> new DefaultExtendedGeoEntityRenderer<>(manager, "geo/samurai.geo.json", "animations/samurai.animation.json", "textures/entities/samurai.png"));
+			RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.ILLAGER_WARDEN.get(), IllagerWardenRenderer::new);
+		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.ELITE_EVOKER.get(), EliteEvokerRenderer::new);
+		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.TRIBAGER.get(), TribagerRenderer::new);
+		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.TRIBAGER_CHIEF.get(), TribagerChiefRenderer::new);
+		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.ROVING_MARKETER.get(), RovingMarketerRenderer::new);
+
+		    RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.ROVING_MARKETER_ITEM.get(), manager -> new RovingMarketerItemRenderer(manager, Minecraft.getInstance().getItemRenderer()));
 
 	    }
 }
